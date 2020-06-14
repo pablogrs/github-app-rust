@@ -2,9 +2,13 @@ use std::net::TcpListener;
 use std::net::TcpStream;
 use std::io::prelude::*;
 use std::fs;
+use dotenv;
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+
+    // Load .env properties file
+    dotenv::dotenv().ok();
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
@@ -14,13 +18,17 @@ fn main() {
 }
 
 fn handle_connection(mut stream: TcpStream) {
-    let mut buffer = [0; 512];
+    let mut buffer = [0; 1024];
     stream.read(&mut buffer).unwrap();
 
-    let get = b"GET / HTTP/1.1\r\n";
+    println!("{}",String::from_utf8_lossy(&buffer[..]));
+    
+    
+    let get = b"POST /file-check HTTP/1.1\r\n";
     let (status_line, filename) = if buffer.starts_with(get) {
         ("HTTP/1.1 200 OK\r\n\r\n", "response.html")
     } else {
+
         ("HTTP/1.1 404 NOT FOUND\r\n\r\n", "404.html")
     };
 

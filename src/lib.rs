@@ -1,22 +1,6 @@
-pub struct ThreadPool;
+struct GithubEnvFile {
+    private_key: String,
+    webhook_secret: String,
+    app_identifier: String,
+} 
 
-impl ThreadPool {
-    /// Create a new ThreadPool.
-    ///
-    /// The size is the number of threads in the pool.
-    ///
-    /// # Panics
-    ///
-    /// The `new` function will panic if the size is zero.
-    pub fn new(_size: usize) -> ThreadPool {
-        assert!(_size > 0);
-
-        ThreadPool
-    }
-
-    pub fn execute<F>(&self, _f: F)
-    where
-        F: FnOnce() + Send + 'static,
-    {
-    }
-}
