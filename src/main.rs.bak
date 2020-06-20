@@ -1,0 +1,57 @@
+use std::net::TcpListener;
+use std::net::TcpStream;
+use std::io::prelude::*;
+use std::fs;
+use dotenv;
+use serde_json::{Value};
+
+
+fn main() {
+    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    let mut json_payload: Value;
+
+    // Load .env properties file
+    dotenv::dotenv().ok();
+
+    for stream in listener.incoming() {
+        let stream = stream.unwrap();
+
+        let request = handle_connection(stream);
+
+        if !request.starts_with("Bad"){
+            json_payload = get_payload_request(request);
+            println!("{}",json_payload);
+        }
+        
+    }
+}
+
+fn handle_connection(mut stream: TcpStream) -> String{
+    let mut buffer = [0; 1024];
+    
+    stream.read(&mut buffer).unwrap();
+    let request : String;
+    println!("{}",String::from_utf8_lossy(&buffer[..]));
+    
+    let get = b"POST /file-check HTTP/1.1\r\n";
+    if !buffer.starts_with(get) {
+        let contents = fs::read_to_string("404.html").unwrap();
+        let response = format!("HTTP/1.1 404 NOT FOUND\r\n\r\n {}", contents);
+        stream.write(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+
+        request = String::from("Bad request");
+    } else {
+        request = String::from_utf8_lossy(&buffer[..]).to_string();
+    };
+
+    return request;
+}
+
+fn get_payload_request(request: String) -> serde_json::Value{
+    return serde_json::json!(&request);
+}
+
+fn verify_webhook_signature() {
+
+}
